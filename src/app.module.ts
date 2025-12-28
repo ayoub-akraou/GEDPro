@@ -10,6 +10,7 @@ import { HealthController } from './health/health.controller';
 import { CandidatesModule } from './candidates/candidates.module';
 import { DocumentsModule } from './documents/documents.module';
 import { FormsModule } from './forms/forms.module';
+import { InterviewsModule } from './interviews/interviews.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { UsersModule } from './users/users.module';
 
@@ -49,6 +50,7 @@ import { UsersModule } from './users/users.module';
     FormsModule,
     CandidatesModule,
     DocumentsModule,
+    InterviewsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
