@@ -24,4 +24,8 @@ export class OrganizationsService {
   async findAll(): Promise<Organization[]> {
     return this.orgRepo.find({ order: { createdAt: 'DESC' } });
   }
+
+  async findById(id: string): Promise<Organization | null> {
+    return this.orgRepo.findOne({ where: { id } });
+  }
 }

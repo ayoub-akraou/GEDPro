@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 import { User, UserRole } from './user.entity';
 
@@ -31,6 +32,26 @@ export class UsersService {
       orgId: data.orgId ?? null,
     });
     return this.usersRepo.save(user);
+  }
+
+  async createWithPassword(data: {
+    email: string;
+    password: string;
+    role?: UserRole;
+    orgId?: string | null;
+  }): Promise<User> {
+    const existing = await this.findByEmail(data.email);
+    if (existing) {
+      throw new ConflictException('Email already exists');
+    }
+
+    const passwordHash = await bcrypt.hash(data.password, 10);
+    return this.create({
+      email: data.email,
+      passwordHash,
+      role: data.role,
+      orgId: data.orgId ?? null,
+    });
   }
 
   async assignOrg(userId: string, orgId: string): Promise<User | null> {
