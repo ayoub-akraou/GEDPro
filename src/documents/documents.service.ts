@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -53,5 +58,23 @@ export class DocumentsService {
     });
 
     return this.documentsRepo.save(document);
+  }
+
+  async findById(id: string) {
+    const document = await this.documentsRepo.findOne({ where: { id } });
+    if (!document) {
+      throw new NotFoundException('Document not found');
+    }
+    return document;
+  }
+
+  async download(orgId: string, id: string) {
+    const document = await this.findById(id);
+    if (document.orgId !== orgId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const stream = await this.minioService.getObject(document.objectKey);
+    return { document, stream };
   }
 }

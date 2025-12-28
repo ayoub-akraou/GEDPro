@@ -2,8 +2,11 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
+  Param,
   Post,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -15,6 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { DocumentsService } from './documents.service';
@@ -53,5 +57,29 @@ export class DocumentsController {
     }
 
     return this.documentsService.upload(req.user.orgId, payload.candidateId, file);
+  }
+
+  @Get(':id/download')
+  async download(
+    @Param('id') id: string,
+    @Req() req: { user: { orgId: string | null } },
+    @Res() res: Response,
+  ) {
+    if (!req.user.orgId) {
+      throw new BadRequestException('Organization is required');
+    }
+
+    const { document, stream } = await this.documentsService.download(
+      req.user.orgId,
+      id,
+    );
+
+    res.setHeader('Content-Type', document.mimeType);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${document.filename}"`,
+    );
+
+    stream.pipe(res);
   }
 }
