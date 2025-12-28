@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { FormsService } from '../forms/forms.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification.entity';
 import { Candidate, CandidateStatus } from './candidate.entity';
 import { CandidateStatusHistory } from './candidate-status-history.entity';
 
@@ -14,6 +16,7 @@ export class CandidatesService {
     @InjectRepository(CandidateStatusHistory)
     private readonly historyRepo: Repository<CandidateStatusHistory>,
     private readonly formsService: FormsService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async submit(publicId: string, data: Record<string, unknown>) {
@@ -38,7 +41,17 @@ export class CandidatesService {
       status: CandidateStatus.NOUVEAU,
     });
 
-    return this.candidatesRepo.save(candidate);
+    const saved = await this.candidatesRepo.save(candidate);
+
+    await this.notificationsService.notify({
+      orgId: saved.orgId,
+      type: NotificationType.CANDIDATE_SUBMITTED,
+      message: `New candidate submitted for form ${form.title}`,
+      targetRole: 'rh',
+      metadata: { candidateId: saved.id, formId: form.id },
+    });
+
+    return saved;
   }
 
   async findById(orgId: string, id: string) {
