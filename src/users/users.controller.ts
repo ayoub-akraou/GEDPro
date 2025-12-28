@@ -2,8 +2,11 @@ import { Body, Controller, NotFoundException, Post, UseGuards } from '@nestjs/co
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UserRole } from './user.entity';
 import { UsersService } from './users.service';
 
 @ApiTags('users')
@@ -17,6 +20,8 @@ export class UsersController {
   ) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN_RH)
   @ApiOkResponse({
     schema: {
       example: {
