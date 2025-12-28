@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -35,6 +35,22 @@ export class CandidatesService {
       status: CandidateStatus.NOUVEAU,
     });
 
+    return this.candidatesRepo.save(candidate);
+  }
+
+  async findById(orgId: string, id: string) {
+    const candidate = await this.candidatesRepo.findOne({
+      where: { id, orgId },
+    });
+    if (!candidate) {
+      throw new NotFoundException('Candidate not found');
+    }
+    return candidate;
+  }
+
+  async updateStatus(orgId: string, id: string, status: CandidateStatus) {
+    const candidate = await this.findById(orgId, id);
+    candidate.status = status;
     return this.candidatesRepo.save(candidate);
   }
 }

@@ -1,0 +1,47 @@
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Param,
+  Patch,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CandidatesService } from './candidates.service';
+import { UpdateCandidateStatusDto } from './dto/update-candidate-status.dto';
+
+@ApiTags('candidates')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller('candidates')
+export class CandidatesController {
+  constructor(private readonly candidatesService: CandidatesService) {}
+
+  @Patch(':id/status')
+  @ApiOkResponse({
+    schema: {
+      example: {
+        id: 'uuid',
+        status: 'PRESELECTIONNE',
+      },
+    },
+  })
+  updateStatus(
+    @Param('id') id: string,
+    @Body() payload: UpdateCandidateStatusDto,
+    @Req() req: { user: { orgId: string | null } },
+  ) {
+    if (!req.user.orgId) {
+      throw new BadRequestException('Organization is required');
+    }
+
+    return this.candidatesService.updateStatus(
+      req.user.orgId,
+      id,
+      payload.status,
+    );
+  }
+}
