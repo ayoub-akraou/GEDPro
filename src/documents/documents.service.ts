@@ -77,4 +77,44 @@ export class DocumentsService {
     const stream = await this.minioService.getObject(document.objectKey);
     return { document, stream };
   }
+
+  async listByCandidate(options: {
+    orgId: string;
+    candidateId: string;
+    type?: string;
+    sortBy?: 'createdAt';
+    order?: 'asc' | 'desc';
+    page?: number;
+    limit?: number;
+  }) {
+    await this.candidatesService.findById(options.orgId, options.candidateId);
+
+    const page = Math.max(options.page ?? 1, 1);
+    const limit = Math.min(Math.max(options.limit ?? 20, 1), 100);
+    const order = (options.order ?? 'desc').toUpperCase() as 'ASC' | 'DESC';
+
+    const qb = this.documentsRepo
+      .createQueryBuilder('document')
+      .where('document.orgId = :orgId', { orgId: options.orgId })
+      .andWhere('document.candidateId = :candidateId', {
+        candidateId: options.candidateId,
+      });
+
+    if (options.type) {
+      qb.andWhere('document.mimeType = :type', { type: options.type });
+    }
+
+    const [items, total] = await qb
+      .orderBy('document.createdAt', order)
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      items,
+      page,
+      limit,
+      total,
+    };
+  }
 }
