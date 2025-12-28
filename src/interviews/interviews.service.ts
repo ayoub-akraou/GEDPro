@@ -37,4 +37,23 @@ export class InterviewsService {
     }
     return interview;
   }
+
+  async update(
+    orgId: string,
+    id: string,
+    data: { scheduledAt?: Date; participants?: string[] },
+  ) {
+    await this.findById(orgId, id);
+    await this.interviewsRepo.update(id, {
+      scheduledAt: data.scheduledAt,
+      participants: data.participants,
+    });
+    return this.findById(orgId, id);
+  }
+
+  async cancel(orgId: string, id: string) {
+    await this.findById(orgId, id);
+    await this.interviewsRepo.update(id, { status: InterviewStatus.CANCELED });
+    return this.findById(orgId, id);
+  }
 }

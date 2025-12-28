@@ -2,6 +2,8 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -10,6 +12,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateInterviewDto } from './dto/create-interview.dto';
+import { UpdateInterviewDto } from './dto/update-interview.dto';
 import { InterviewsService } from './interviews.service';
 
 @ApiTags('interviews')
@@ -43,5 +46,35 @@ export class InterviewsController {
       scheduledAt: new Date(payload.scheduledAt),
       participants: payload.participants,
     });
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() payload: UpdateInterviewDto,
+    @Req() req: { user: { orgId: string | null } },
+  ) {
+    if (!req.user.orgId) {
+      throw new BadRequestException('Organization is required');
+    }
+
+    return this.interviewsService.update(req.user.orgId, id, {
+      scheduledAt: payload.scheduledAt
+        ? new Date(payload.scheduledAt)
+        : undefined,
+      participants: payload.participants,
+    });
+  }
+
+  @Patch(':id/cancel')
+  cancel(
+    @Param('id') id: string,
+    @Req() req: { user: { orgId: string | null } },
+  ) {
+    if (!req.user.orgId) {
+      throw new BadRequestException('Organization is required');
+    }
+
+    return this.interviewsService.cancel(req.user.orgId, id);
   }
 }
