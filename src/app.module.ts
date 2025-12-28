@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { HealthController } from './health/health.controller';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -12,7 +15,11 @@ import { HealthController } from './health/health.controller';
       isGlobal: true,
       validationSchema: Joi.object({
         PORT: Joi.number().default(3000),
+        NODE_ENV: Joi.string()
+          .valid('development', 'test', 'production')
+          .default('development'),
         JWT_SECRET: Joi.string().required(),
+        JWT_EXPIRES_IN: Joi.string().default('1d'),
         DATABASE_URL: Joi.string().required(),
         MINIO_ENDPOINT: Joi.string().required(),
         MINIO_PORT: Joi.number().required(),
@@ -20,6 +27,19 @@ import { HealthController } from './health/health.controller';
         MINIO_SECRET_KEY: Joi.string().required(),
       }),
     }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        url: configService.get<string>('DATABASE_URL'),
+        autoLoadEntities: true,
+        synchronize: true,
+        logging: configService.get<string>('NODE_ENV') !== 'production',
+      }),
+    }),
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
