@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { HealthController } from './health/health.controller';
+import { CandidatesModule } from './candidates/candidates.module';
 import { FormsModule } from './forms/forms.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { UsersModule } from './users/users.module';
@@ -44,6 +45,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     OrganizationsModule,
     FormsModule,
+    CandidatesModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
