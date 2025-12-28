@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { FormsModule } from '../forms/forms.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { Candidate } from './candidate.entity';
 import { CandidateStatusHistory } from './candidate-status-history.entity';
 import { CandidatesController } from './candidates.controller';
@@ -16,7 +17,7 @@ import { PublicCandidatesController } from './public-candidates.controller';
     NotificationsModule,
   ],
   controllers: [PublicCandidatesController, CandidatesController],
-  providers: [CandidatesService],
+  providers: [CandidatesService, RolesGuard],
   exports: [CandidatesService],
 })
 export class CandidatesModule {}

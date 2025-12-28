@@ -11,6 +11,9 @@ import {
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { UserRole } from '../users/user.entity';
 import { CandidatesService } from './candidates.service';
 import { UpdateCandidateStatusDto } from './dto/update-candidate-status.dto';
 
@@ -22,6 +25,8 @@ export class CandidatesController {
   constructor(private readonly candidatesService: CandidatesService) {}
 
   @Patch(':id/status')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN_RH, UserRole.RH, UserRole.MANAGER)
   @ApiOkResponse({
     schema: {
       example: {
@@ -48,6 +53,8 @@ export class CandidatesController {
   }
 
   @Get(':id/history')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN_RH, UserRole.RH, UserRole.MANAGER)
   @ApiOkResponse({ schema: { example: [] } })
   history(
     @Param('id') id: string,
