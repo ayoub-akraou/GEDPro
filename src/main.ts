@@ -20,6 +20,7 @@ async function bootstrap() {
     .setTitle('GEDPro API')
     .setDescription('API GEDPro')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, swaggerDocument);
