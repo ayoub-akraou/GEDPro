@@ -56,4 +56,19 @@ export class InterviewsService {
     await this.interviewsRepo.update(id, { status: InterviewStatus.CANCELED });
     return this.findById(orgId, id);
   }
+
+  async list(orgId: string, dateFrom?: Date, dateTo?: Date) {
+    const qb = this.interviewsRepo
+      .createQueryBuilder('interview')
+      .where('interview.orgId = :orgId', { orgId });
+
+    if (dateFrom) {
+      qb.andWhere('interview.scheduledAt >= :dateFrom', { dateFrom });
+    }
+    if (dateTo) {
+      qb.andWhere('interview.scheduledAt <= :dateTo', { dateTo });
+    }
+
+    return qb.orderBy('interview.scheduledAt', 'ASC').getMany();
+  }
 }

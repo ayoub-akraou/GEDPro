@@ -2,9 +2,11 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -76,5 +78,23 @@ export class InterviewsController {
     }
 
     return this.interviewsService.cancel(req.user.orgId, id);
+  }
+
+  @Get()
+  @ApiOkResponse({ schema: { example: [] } })
+  list(
+    @Query('date_from') dateFrom?: string,
+    @Query('date_to') dateTo?: string,
+    @Req() req: { user: { orgId: string | null } },
+  ) {
+    if (!req.user.orgId) {
+      return [];
+    }
+
+    return this.interviewsService.list(
+      req.user.orgId,
+      dateFrom ? new Date(dateFrom) : undefined,
+      dateTo ? new Date(dateTo) : undefined,
+    );
   }
 }
