@@ -83,6 +83,18 @@ export class FormsController {
     return this.formsService.update(req.user.orgId, id, payload);
   }
 
+  @Patch(':id/publish')
+  publish(
+    @Param('id') id: string,
+    @Req() req: { user: { orgId: string | null } },
+  ) {
+    if (!req.user.orgId) {
+      throw new BadRequestException('Organization is required');
+    }
+
+    return this.formsService.publish(req.user.orgId, id);
+  }
+
   @Delete(':id')
   remove(
     @Param('id') id: string,

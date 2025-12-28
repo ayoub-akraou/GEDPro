@@ -7,10 +7,11 @@ import { FormFieldsService } from './form-fields.service';
 import { Form } from './form.entity';
 import { FormsController } from './forms.controller';
 import { FormsService } from './forms.service';
+import { PublicFormsController } from './public-forms.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Form, FormField])],
-  controllers: [FormsController, FormFieldsController],
+  controllers: [FormsController, FormFieldsController, PublicFormsController],
   providers: [FormsService, FormFieldsService],
   exports: [FormsService],
 })

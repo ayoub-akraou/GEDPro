@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 
-import { Form } from './form.entity';
+import { Form, FormStatus } from './form.entity';
 
 @Injectable()
 export class FormsService {
@@ -50,6 +51,31 @@ export class FormsService {
   async remove(orgId: string, id: string) {
     const form = await this.findOne(orgId, id);
     await this.formsRepo.delete(id);
+    return form;
+  }
+
+  async publish(orgId: string, id: string) {
+    const form = await this.findOne(orgId, id);
+    if (form.status === FormStatus.PUBLISHED) {
+      return form;
+    }
+
+    await this.formsRepo.update(id, {
+      status: FormStatus.PUBLISHED,
+      publicId: form.publicId ?? randomUUID(),
+    });
+
+    return this.findOne(orgId, id);
+  }
+
+  async findPublishedByPublicId(publicId: string) {
+    const form = await this.formsRepo.findOne({
+      where: { publicId, status: FormStatus.PUBLISHED },
+      relations: ['fields'],
+    });
+    if (!form) {
+      throw new NotFoundException('Form not found');
+    }
     return form;
   }
 }
