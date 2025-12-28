@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Param,
   Patch,
   Req,
@@ -32,7 +33,7 @@ export class CandidatesController {
   updateStatus(
     @Param('id') id: string,
     @Body() payload: UpdateCandidateStatusDto,
-    @Req() req: { user: { orgId: string | null } },
+    @Req() req: { user: { orgId: string | null; userId: string } },
   ) {
     if (!req.user.orgId) {
       throw new BadRequestException('Organization is required');
@@ -42,6 +43,20 @@ export class CandidatesController {
       req.user.orgId,
       id,
       payload.status,
+      req.user.userId,
     );
+  }
+
+  @Get(':id/history')
+  @ApiOkResponse({ schema: { example: [] } })
+  history(
+    @Param('id') id: string,
+    @Req() req: { user: { orgId: string | null } },
+  ) {
+    if (!req.user.orgId) {
+      throw new BadRequestException('Organization is required');
+    }
+
+    return this.candidatesService.getHistory(req.user.orgId, id);
   }
 }

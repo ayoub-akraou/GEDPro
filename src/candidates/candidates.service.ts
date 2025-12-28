@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 
 import { FormsService } from '../forms/forms.service';
 import { Candidate, CandidateStatus } from './candidate.entity';
+import { CandidateStatusHistory } from './candidate-status-history.entity';
 
 @Injectable()
 export class CandidatesService {
   constructor(
     @InjectRepository(Candidate)
     private readonly candidatesRepo: Repository<Candidate>,
+    @InjectRepository(CandidateStatusHistory)
+    private readonly historyRepo: Repository<CandidateStatusHistory>,
     private readonly formsService: FormsService,
   ) {}
 
@@ -48,9 +51,39 @@ export class CandidatesService {
     return candidate;
   }
 
-  async updateStatus(orgId: string, id: string, status: CandidateStatus) {
+  async updateStatus(
+    orgId: string,
+    id: string,
+    status: CandidateStatus,
+    changedBy: string,
+  ) {
     const candidate = await this.findById(orgId, id);
+    if (candidate.status === status) {
+      return candidate;
+    }
+
+    const fromStatus = candidate.status;
     candidate.status = status;
-    return this.candidatesRepo.save(candidate);
+    const saved = await this.candidatesRepo.save(candidate);
+
+    await this.historyRepo.save(
+      this.historyRepo.create({
+        orgId,
+        candidateId: candidate.id,
+        fromStatus,
+        toStatus: status,
+        changedBy,
+      }),
+    );
+
+    return saved;
+  }
+
+  async getHistory(orgId: string, candidateId: string) {
+    await this.findById(orgId, candidateId);
+    return this.historyRepo.find({
+      where: { orgId, candidateId },
+      order: { changedAt: 'DESC' },
+    });
   }
 }
