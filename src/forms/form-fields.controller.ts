@@ -14,6 +14,9 @@ import {
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { UserRole } from '../users/user.entity';
 import { CreateFormFieldDto } from './dto/create-form-field.dto';
 import { ReorderFormFieldsDto } from './dto/reorder-form-fields.dto';
 import { UpdateFormFieldDto } from './dto/update-form-field.dto';
@@ -22,7 +25,8 @@ import { FormsService } from './forms.service';
 
 @ApiTags('form-fields')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN_RH, UserRole.RH)
 @Controller('forms/:formId/fields')
 export class FormFieldsController {
   constructor(
