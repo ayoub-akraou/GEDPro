@@ -89,6 +89,14 @@ export class CandidatesService {
       }),
     );
 
+    await this.notificationsService.notify({
+      orgId,
+      type: NotificationType.CANDIDATE_STATUS_CHANGED,
+      message: `Candidate status changed to ${status}`,
+      targetRole: 'manager',
+      metadata: { candidateId: candidate.id, fromStatus, toStatus: status },
+    });
+
     return saved;
   }
 
